@@ -1,0 +1,65 @@
+.forgot-hide-block{
+  transform:translateX(-120%);
+  transition:transform 0.5s ease-in-out;
+}
+.forgot-account{
+  position:absolute;
+  top:0px;
+  height:100%;
+  bottom:0px;
+  left:0px;
+  width:100%;
+  transform:translateX(0%);
+  transition:transform 0.5s ease-in-out;
+}
+.forgot-ac-block-hide{
+  position:absolute;
+  top:0px;
+  height:100%;
+  bottom:0px;
+  left:0px;
+  width:100%;
+  transform:translateX(120%);
+  transition:transform 0.5s ease-in-out;
+}
+
+.hide-fc-block{
+  position:absolute;
+  top:0px;
+  height:100%;
+  bottom:0px;
+  left:0px;
+  width:100%;
+  transform:translateY(120%);
+  transition:transform 0.5s ease-in-out;
+}
+.hide-update-password{
+  position:absolute;
+  top:0px;
+  height:100%;
+  bottom:0px;
+  left:0px;
+  width:100%;
+  transform:translateY(-120%);
+  transition:transform 0.5s ease-in-out;
+}
+.hide-update-password-login{
+  position:absolute;
+  top:0px;
+  height:100%;
+  bottom:0px;
+  left:0px;
+  width:100%;
+  transform:translateX(120%);
+  transition:transform 0.5s ease-in-out;
+}
+.show-update-password{
+  position:absolute;
+  top:0px;
+  height:100%;
+  bottom:0px;
+  left:0px;
+  width:100%;
+  transform:translateY(0%);
+  transition:transform 0.5s ease-in-out;
+}

@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+
+.login-block:before{
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  /*    background: linear-gradient(45deg, transparent, gold, red, grey);*/
+  /* background: linear-gradient(45deg, #ffff, silver, transparent, orange);
+  animation: animate 6s linear infinite; */
+}
+.login-block.maroon-c:before{
+  background: linear-gradient(45deg, lightskyblue, darkcyan, maroon, orange) !important;
+}
+.login-block.silver-c:before{
+  background: linear-gradient(45deg, #ffff, silver, transparent, orange) !important;
+}
+.login-block.blue-c:before{
+  background: linear-gradient(45deg, gold, #ffff, silver, transparent, #dba540) !important;
+}
+.login-block.dark-blue-c:before{
+  background: linear-gradient(45deg, lightskyblue, darkblue, maroon, orange) !important;
+}
+@keyframes animate {
+  0%{
+    transform: rotate(0deg);
+  }
+  100%{
+    transform: rotate(360deg);
+  }
+}
+.login-block{
+  /*background: linear-gradient(30deg, grey, black, transparent, gold);*/
+  width: 500px;
+  height:max-content;
+  max-height:calc(100vh - 30px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: -20px -11px 18px 10px rgba(240, 240, 240, 0.8);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-outer{
+  height: 100vh;
+  align-items: center;
+  overflow:hidden;
+  position:relative;
+  /*s-1*/
+  /*background: linear-gradient(45deg, darkblue, transparent);*/
+  
+}
+.login-outer:before{
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 300%;
+  background: linear-gradient(45deg, #ffff, silver, transparent, orange);
+  animation: animate 6s linear infinite;
+  overflow: hidden;
+}
+.login-outer.maroon-c:before{
+  background: linear-gradient(45deg, lightskyblue, darkcyan, maroon, orange) !important;
+}
+.login-outer.black-c{
+  background: linear-gradient(45deg, black, transparent);
+}
+.login-outer.blue-c{
+  background: linear-gradient(45deg, darkblue, transparent) !important;
+}
+.login-outer.dark-blue-c{
+  background: linear-gradient(45deg, lightskyblue, darkblue, maroon, orange) !important;
+}
+.hide-account{
+  position: absolute;
+  top: 0%;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  transform:translateY(100%);
+  transition: transform 0.5s ease-in-out;
+}
+.create-account{
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  opacity: 1;
+  z-index: 1;
+  top: 0px;
+  height:100%;
+  transform:translateY(0%);
+  transition: transform 0.5s ease-in;
+}
+.login-form{
+  width:100%;
+  height:100%;
+  opacity: 1;
+  transform: translate(0%,0%);
+  transition: transform 0.5s ease-in;
+}
+.login-form.hide-block{
+  transform:translateY(-120%);
+  transition: transform 0.5s ease-in-out;
+}

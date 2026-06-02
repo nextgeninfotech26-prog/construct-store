@@ -1,0 +1,60 @@
+.header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100px;
+    background: mintcream;
+    box-shadow: 4px 4px 3px 3px lightgrey;
+    position: sticky;
+    top: 0px;
+}
+.header-f-col{
+    width: 100px;
+}
+.header-f-col img{
+    object-fit: contain;
+    width: 50px;
+    height: 50px;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+.header-s-col{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    column-gap: 25px;
+}
+.header-t-col{
+    width: 100px;
+    text-align: -webkit-right;
+    padding-right: 10px;
+}
+.header-t-col img{
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+.link-hover-l-to-r{
+    position: relative;
+    cursor: pointer;
+}
+.link-hover-l-to-r::before{
+    content: "";
+    position: absolute;
+    width: 0%;
+    height: 3px;
+    bottom: -3px;
+    background: linear-gradient(45deg, transparent, dodgerblue, dodgerblue);
+    left: 0px;
+    transition: width 0.3s ease-in-out;
+}
+.link-hover-l-to-r:hover::before{
+    width: 100%;
+}
+.link-hover-l-to-r:hover{
+    color: dodgerblue;
+}
+.cursor-pointer{
+    cursor: pointer;
+}
