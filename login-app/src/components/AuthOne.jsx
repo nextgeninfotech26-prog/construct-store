@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import "./AuthOne.css"
 import api from "./../api.js"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "../AuthContext";
 
 // smki qpje djbc zkef
 
 const AuthOne = () => {
+    const { token, setToken, isRegisteredOrLogin, setIsRegisteredOrLogin, isLoggedIn, setIsLoggedIn } = useAuth();
     const [isLogin,setLogin] = useState(true);
     const [isForgot,setForgot] = useState(false);
     const [isCodeSend,setCodeSend] = useState(false);
@@ -17,6 +19,7 @@ const AuthOne = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [hideUpdatePassword, setHideUpdatePassword] = useState(false);
 
+    const location = useLocation();
     const navigate = useNavigate();
 
     const [formData,setFormData] = useState({
@@ -24,6 +27,14 @@ const AuthOne = () => {
         email:"",
         password:""
     });
+
+    useEffect(() => {
+        if(isRegisteredOrLogin){
+            setLogin(false);
+        }else{
+            setLogin(true);
+        }
+    },[isRegisteredOrLogin]);    
 
     const handleChange = (e) => {
         setFormData({
@@ -95,71 +106,50 @@ const AuthOne = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        const from = location.state?.from || "/dashboard";
         if(isLogin){
-             try {
-
+            try {
                 const response = await api.post(
                     "/login",
                     formData
                 );
-
                 localStorage.setItem(
                     "token",
                     response.data.access_token
                 );
-
+                setToken(response.data.access_token);
+                setIsLoggedIn(true);
                 await syncCartAfterLogin();
-
                 alert("Login Successful"+response.data.access_token);
-                    navigate("/dashboard");
+                navigate(from);
             } catch (error) {
-
                 console.log(error);
-
                 alert(
                     error?.response?.data?.detail ||
                     error.message ||
                     "Something went wrong"
                 );
-
             }
-            console.log("Login Data:",formdata);
+            //console.log("Login Data:",formdata);
         }else{
             try {
-
-                const response = await api.post(
-                    "/register",
-                    formData
-                );
-
+                const response = await api.post("/register",formData);
                 alert(response.data.message);
-
-                } catch (error) {
-
+                setLogin(true);
+            } catch (error) {
                 alert(error.response.data.detail);
-
-                }
+            }
             console.log("Register Data:",formData);
         }
     }
 
     const syncCartAfterLogin = async () => {
-        const token = localStorage.getItem("token");
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
         if (cart.length === 0) return;
 
         try {
-            const response = await api.post(
-                "/cart/save",
-                cart,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+            const response = await api.post("/cart/save",cart);
             console.log("Cart:- ", response.data);
             localStorage.removeItem("cart");
         } catch (error) {

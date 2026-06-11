@@ -10,18 +10,25 @@ import Dashboard from "./components/Dashboard.jsx"
 import Security from "./components/Security.jsx"
 import { Navigate } from "react-router-dom"
 import Header from "./components/Header.jsx"
+import Cart from "./components/Cart.jsx"
+import { useAuth } from "./AuthContext.jsx";
+import ProfilePage from "./components/ProfilePage.jsx";
 
 function App() {
-  const token = localStorage.getItem("token");
+  const { token, isRegisteredOrLogin } = useAuth();
   //alert(token);
-  //localStorage.removeItem("token");
+  // localStorage.removeItem("token");
+  // localStorage.removeItem("cart");
+  // localStorage.removeItem("cartCount");
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<><Header /><Dashboard /></>} />
+        <Route path="/cart" element={<><Header /><Cart /></>} />
         <Route path="/fff" element={token ? <Navigate to="/dashboard" /> : <Navigate to="/login" /> } />
         <Route path="/login" element={<AuthOne />} />
         <Route path="/dashboard" element={<Security><Header /><Dashboard /></Security>} />
+        <Route path="/profile" element={<ProfilePage />}/>
       </Routes>
     </Router>
   )

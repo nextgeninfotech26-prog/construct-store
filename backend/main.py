@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,10 +10,22 @@ import random
 from database import engine, SessionLocal
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from mail import send_email
+import os
+import uuid
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory=UPLOAD_DIR),
+    name="uploads"
+)
 
 # CORS
 app.add_middleware(
@@ -105,6 +118,66 @@ def login(
         "token_type": "bearer"
     }
 
+@app.get("/profile")
+def get_profile(
+    current_user: models.User = Depends(get_current_user)
+):
+    return current_user
+
+@app.post("/profile/upload-image")
+async def upload_profile_image(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+
+    db_user = db.query(models.User).filter(
+        models.User.id == current_user.id
+    ).first()
+    extension = file.filename.split(".")[-1]
+
+    filename = f"{uuid.uuid4()}.{extension}"
+
+    filepath = os.path.join(UPLOAD_DIR, filename)
+
+    with open(filepath, "wb") as buffer:
+        buffer.write(await file.read())
+
+    db_user.image_url = f"/uploads/profile/{filename}"
+
+    db.commit()
+
+    return {
+        "image_url": db_user.image_url
+    }
+
+@app.put("/profile/update")
+def update_profile(
+    profile_data: schemas.UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    
+    db_user = db.query(models.User).filter(
+        models.User.id == current_user.id
+    ).first()
+
+    db_user.username = profile_data.username
+    db_user.phone = profile_data.phone
+    db_user.address = profile_data.address
+    db_user.city = profile_data.city
+    db_user.state = profile_data.state
+    db_user.pincode = profile_data.pincode
+
+    db.commit()
+    #db.refresh(current_user)
+
+    return {
+        "success": True,
+        "message": "Profile updated successfully",
+        "user": current_user
+    }
+
 @app.post("/send-reset-code")
 def sendResetCode(
     user: schemas.ResetCodeSchema,
@@ -178,6 +251,49 @@ def updateNewPassword(
         "message": "Password updated successfully"
     }
 
+@app.get("/address", response_model=schemas.UserAddressResponse)
+def get_address(
+    current_user = Depends(get_current_user)
+):
+    return {
+        "username": current_user.username,
+        "email": current_user.email,
+        "image": current_user.image_url,
+        "phone": current_user.phone,
+        "address": current_user.address,
+        "city": current_user.city,
+        "state": current_user.state,
+        "pincode": current_user.pincode
+    }
+
+@app.put("/address/update")
+def update_address(
+    request: schemas.AddressUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    print("User ID:", current_user.id)
+    print("Before:", current_user.phone)
+
+    user = db.query(models.User).filter(
+        models.User.id == current_user.id
+    ).first()
+
+    user.phone = request.phone
+    user.address = request.address
+    user.city = request.city
+    user.state = request.state
+    user.pincode = request.pincode
+
+    print("After:", user.phone)
+    #print("Updated Address: ", request)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Address updated successfully"
+    }
+
 
 @app.get("/products", response_model=list[schemas.ProductSchema])
 def getProducts(db: Session = Depends(get_db)):
@@ -199,7 +315,8 @@ def add_cart(
 
     existing = db.query(models.CartItem).filter(
         models.CartItem.user_id == user_id,
-        models.CartItem.product_id == cart_item.product_id
+        models.CartItem.product_id == cart_item.product_id,
+        models.CartItem.is_ordersaved == False
     ).first()
 
     if existing:
@@ -229,7 +346,8 @@ def add_cart_save(
     for item in cart_items:
         existing = db.query(models.CartItem).filter(
             models.CartItem.user_id == user_id,
-            models.CartItem.product_id == item.product_id
+            models.CartItem.product_id == item.product.id,
+            models.CartItem.is_ordersaved == False
         ).first()
 
         if existing:
@@ -238,13 +356,72 @@ def add_cart_save(
             db.add(
                 models.CartItem(
                     user_id=user_id,
-                    product_id=item.product_id,
+                    product_id=item.product.id,
                     quantity=item.quantity
                 )
             )
 
     db.commit()
 
-    return cart_item    
+    return cart_items    
 
-       
+@app.get("/cart-count")
+def get_cart_count(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    user_id = current_user.id
+    count = db.query(models.CartItem).filter(models.CartItem.user_id == user_id, models.CartItem.is_ordersaved == False).count()
+    print("Cart Count: ", count, "User ID: ", user_id)
+    return {"count": count}
+
+@app.get("/cart")
+def get_cart(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    user_id = current_user.id
+    # cart_items = db.query(models.CartItem).filter(models.CartItem.user_id == user_id).all()
+    # return cart_items
+
+    cart_items = (
+    db.query(models.CartItem)
+    .filter(models.CartItem.user_id == user_id, models.CartItem.is_ordersaved == False)
+    .options(
+        joinedload(models.CartItem.product)
+        .joinedload(models.Product.images)
+    )
+    .all()
+)
+    return cart_items
+
+
+@app.delete("/cart/{cart_item_id}")
+def remove_cart_item(
+    cart_item_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    cart_item = (
+        db.query(models.CartItem)
+        .filter(
+            models.CartItem.id == cart_item_id,
+            models.CartItem.user_id == current_user.id,
+            models.CartItem.is_ordersaved == False
+        )
+        .first()
+    )
+
+    if not cart_item:
+        raise HTTPException(
+            status_code=404,
+            detail="Cart item not found"
+        )
+
+    db.delete(cart_item)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Item removed from cart"
+    }

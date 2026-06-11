@@ -1,9 +1,10 @@
 import { Navigate } from "react-router-dom";
 
 import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../AuthContext";
 
 function Security({ children }){
-    const token = localStorage.getItem("token");
+    const { token , setToken } = useAuth();
     if (!token) {
         return <Navigate to="/login" />;
     }
@@ -15,14 +16,14 @@ function Security({ children }){
 
         if (decoded.exp < currentTime) {
 
-        localStorage.removeItem("token");
+        setToken(null);
 
         return <Navigate to="/login" />;
         }
 
     } catch (error) {
 
-        localStorage.removeItem("token");
+        setToken(null);
 
         return <Navigate to="/login" />;
     }

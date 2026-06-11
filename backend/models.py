@@ -24,6 +24,7 @@ class User(Base):
     password = Column(String(255))
     password_text = Column(String(255))
     role = Column(Enum(UserRole), default=UserRole.CUSTOMER)
+    image_url = Column(String(500), nullable=True)
     phone = Column(String(15), nullable=True)
     address = Column(Text, nullable=True)
     city = Column(String(100), nullable=True)
@@ -109,6 +110,7 @@ class CartItem(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     product_id = Column(Integer, ForeignKey("products.id"))
     quantity = Column(Integer, default=1)
+    is_ordersaved = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="cart_items")
